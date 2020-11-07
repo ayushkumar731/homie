@@ -1,3 +1,4 @@
+const User = require("../../../models/user");
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
 const catchAsync = require("../../../config/catchAsynch");
@@ -35,30 +36,35 @@ const createSendToken = (user, statusCode, req, res) => {
 };
 
 //*******************CREATE NEW USER *************************//
-exports.create = catchAsync(async (req, res, next, Model) => {
-  const newUser = await Model.create({
+exports.create = catchAsync(async (req, res, next) => {
+  const newUser = await User.create({
     email: req.body.email,
     name: req.body.name,
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
   });
+
   res.status(200).json({
     status: "success",
-    message: "Sign up successfully",
+    message: "resgisterd successfully",
   });
 });
 
 //**********************LOGIN SESSIONS**************************//
-exports.createSession = catchAsync(async (req, res, next, Model) => {
+exports.createSession = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
     return next(new AppError("Please provide email and password", 400));
   }
-  const user = await Model.findOne({ email }).select("+password");
+  const user = await User.findOne({ email }).select("+password");
 
   if (!user || !(await user.checkPassword(password, user.password))) {
     return next(new AppError("Incorrect email/password", 401));
+  }
+
+  if (user.emailVerification === false) {
+    return next(new AppError("verify your email", 401));
   }
 
   createSendToken(user, 200, req, res);

@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const bcrypt = require("bcryptjs");
 
-const RenterSchema = new Schema(
+const UserSchema = new Schema(
   {
     email: {
       type: String,
@@ -32,7 +32,7 @@ const RenterSchema = new Schema(
     role: {
       type: String,
       default: "renter",
-      enum: ["renter"],
+      enum: ["landlord", "renter"],
     },
   },
   {
@@ -40,7 +40,7 @@ const RenterSchema = new Schema(
   }
 );
 
-RenterSchema.pre("save", async function (next) {
+UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   this.password = await bcrypt.hash(this.password, 12);
@@ -48,9 +48,9 @@ RenterSchema.pre("save", async function (next) {
   next();
 });
 
-RenterSchema.methods.checkPassword = async function (formPass, userPass) {
+UserSchema.methods.checkPassword = async function (formPass, userPass) {
   return await bcrypt.compare(formPass, userPass);
 };
 
-const renter = mongoose.model("Renter", RenterSchema);
-module.exports = renter;
+const user = mongoose.model("User", UserSchema);
+module.exports = user;

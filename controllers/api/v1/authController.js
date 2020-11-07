@@ -98,12 +98,13 @@ exports.destroy = (req, res) => {
 
 //*******************CONTROL USER*********************//
 exports.restrictTo = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+  return catchAsync((req, res, next) => {
+    const user = await User.findOne(req.body.email);
+    if (!roles.includes(user.role)) {
       return next(
         new AppError("You do not have permission to perform this action", 403)
       );
     }
     next();
-  };
+  });
 };

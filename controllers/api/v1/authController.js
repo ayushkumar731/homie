@@ -1,6 +1,5 @@
 const User = require("../../../models/user");
 const jwt = require("jsonwebtoken");
-const { promisify } = require("util");
 const catchAsync = require("../../../config/catchAsynch");
 const AppError = require("../../../config/AppError");
 
@@ -33,6 +32,22 @@ const createSendToken = (user, statusCode, req, res) => {
       user,
     },
   });
+};
+
+//****************SET LANDLORD ROLE***************//
+exports.setLandlordRole = (req, res, next) => {
+  if (!req.body.role) {
+    req.body.role = "landlord";
+  }
+  next();
+};
+
+//****************SET RENTER ROLE***************//
+exports.setRenterRole = (req, res, next) => {
+  if (!req.body.role) {
+    req.body.role = "renter";
+  }
+  next();
 };
 
 //*******************CREATE NEW USER *************************//
@@ -79,4 +94,16 @@ exports.destroy = (req, res) => {
   res.status(200).json({
     status: "success",
   });
+};
+
+//*******************CONTROL USER*********************//
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You do not have permission to perform this action", 403)
+      );
+    }
+    next();
+  };
 };

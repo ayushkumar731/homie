@@ -1,6 +1,6 @@
 const User = require("../../../models/user");
 const jwt = require("jsonwebtoken");
-const catchAsync = require("../../../config/catchAsynch");
+const catchAsync = require("../../../config/catchAsync");
 const AppError = require("../../../config/AppError");
 
 //***************GENERATE TOKEN********************//
@@ -24,6 +24,7 @@ const createSendToken = (user, statusCode, req, res) => {
 
   //remove password from output
   user.password = undefined;
+  user.role = undefined;
 
   res.status(statusCode).json({
     status: "success",
@@ -57,9 +58,10 @@ exports.create = catchAsync(async (req, res, next) => {
     name: req.body.name,
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
+    role: req.body.role,
   });
 
-  res.status(200).json({
+  return res.status(200).json({
     status: "success",
     message: "resgisterd successfully",
   });
@@ -78,10 +80,6 @@ exports.createSession = catchAsync(async (req, res, next) => {
     return next(new AppError("Incorrect email/password", 401));
   }
 
-  if (user.emailVerification === false) {
-    return next(new AppError("verify your email", 401));
-  }
-
   createSendToken(user, 200, req, res);
 });
 
@@ -98,8 +96,8 @@ exports.destroy = (req, res) => {
 
 //*******************CONTROL USER*********************//
 exports.restrictTo = (...roles) => {
-  return catchAsync((req, res, next) => {
-    const user = await User.findOne(req.body.email);
+  return catchAsync(async (req, res, next) => {
+    const user = await User.findOne({ email: req.body.email });
     if (!roles.includes(user.role)) {
       return next(
         new AppError("You do not have permission to perform this action", 403)

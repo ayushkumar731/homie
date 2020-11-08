@@ -33,6 +33,7 @@ const UserSchema = new Schema(
       type: String,
       default: "renter",
       enum: ["landlord", "renter"],
+      required: [true, "Please provide role"],
     },
   },
   {

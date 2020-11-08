@@ -35,6 +35,10 @@ const UserSchema = new Schema(
       enum: ["landlord", "renter"],
       required: [true, "Please provide role"],
     },
+    phone: {
+      type: String,
+      required: [true, "Please provide your mobile number"],
+    },
   },
   {
     timestamps: true,
